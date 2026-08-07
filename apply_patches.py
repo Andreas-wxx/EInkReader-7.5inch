@@ -26,3 +26,24 @@ if not path.isfile(patchflag_path):
         with open(path, "w") as fp:
             fp.write("")
     env.Execute(lambda *args, **kwargs: _touch(patchflag_path))
+
+# Native SPI: 修复 64 位 Windows 下指针转 unsigned long 丢精度的问题
+# (Native SPI 库的 SPI.cpp 用 (unsigned long)cbuf 取指针地址, 在 x64 上截断为 32 位)
+for lib_dir in env.get("LIBSOURCE_DIRS"):
+    native_spi_dir = path.join(env.subst(lib_dir), "Native SPI")
+    if not path.isdir(native_spi_dir):
+        continue
+    print("Find Native SPI: " + native_spi_dir)
+    spi_flag_path = path.join(native_spi_dir, ".patching-done")
+    if not path.isfile(spi_flag_path):
+        spi_cpp = path.join(native_spi_dir, "src", "SPI.cpp")
+        with open(spi_cpp, "r", encoding="utf-8", errors="ignore") as fp:
+            content = fp.read()
+        new_content = content.replace("(unsigned long)cbuf", "(uintptr_t)cbuf")
+        if new_content != content:
+            with open(spi_cpp, "w", encoding="utf-8") as fp:
+                fp.write(new_content)
+            print("Patched Native SPI: (unsigned long)cbuf -> (uintptr_t)cbuf")
+        with open(spi_flag_path, "w") as fp:
+            fp.write("")
+    break

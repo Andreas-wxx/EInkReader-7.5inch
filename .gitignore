@@ -1,3 +1,5 @@
 .vscode/
 .pio/
 build/
+third_party/
+.pio-core/
