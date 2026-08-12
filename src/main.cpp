@@ -208,60 +208,66 @@ IRAM_ATTR void onKeyPressed() {
 }
 
 void initPages() {
-    // 主页面: 天气
+        // 书架页面
     addPage([](bool init) {
-        time_t timestamp = time(nullptr);
-        tm *ptime = localtime(&timestamp);
-#if SLEEP_ON_NIGHT == true
-        if (ptime->tm_hour >= 0 && ptime->tm_hour < 5) {
-            goto update_timer;
-        }
-#endif
-        bool isSleeping = false;
-#if SLEEP_TIMEOUT > 0
-        if (millis() - sleepTimer >= SLEEP_TIMEOUT * 1000) {
-            isSleeping = true;
-        } else {
-#if defined(ESP8266)
-            isSleeping = ESP.getResetInfoPtr()->reason == REASON_DEEP_SLEEP_AWAKE;
-#elif defined(ESP32)
-            isSleeping = esp_reset_reason() == ESP_RST_DEEPSLEEP;
-#endif
-        }
-#endif
+        UI::bookshelf(epd, u8g2Fonts);
+    });
+    
+//     // 主页面: 天气
+//     addPage([](bool init) {
+//         time_t timestamp = time(nullptr);
+//         tm *ptime = localtime(&timestamp);
+// #if SLEEP_ON_NIGHT == true
+//         if (ptime->tm_hour >= 0 && ptime->tm_hour < 5) {
+//             goto update_timer;
+//         }
+// #endif
+//         bool isSleeping = false;
+// #if SLEEP_TIMEOUT > 0
+//         if (millis() - sleepTimer >= SLEEP_TIMEOUT * 1000) {
+//             isSleeping = true;
+//         } else {
+// #if defined(ESP8266)
+//             isSleeping = ESP.getResetInfoPtr()->reason == REASON_DEEP_SLEEP_AWAKE;
+// #elif defined(ESP32)
+//             isSleeping = esp_reset_reason() == ESP_RST_DEEPSLEEP;
+// #endif
+//         }
+// #endif
 
-        if (rtcdata.coordinate[0] == '\0') {
-            if (String(config.location).indexOf(',') == -1) {
-                CityInfo cityInfo = {};
-                if (api.getCityInfo(cityInfo, config.location)) {
-                    sprintf(rtcdata.coordinate, "%.2f,%.2f", cityInfo.lon, cityInfo.lat);
-                }
-            } else {
-                memcpy(rtcdata.coordinate, config.location, sizeof(rtcdata.coordinate));
-            }
-        }
-        UI::weather(epd, u8g2Fonts, ptime, isSleeping, WiFi.RSSI(), getBatteryLevel());
+//         if (rtcdata.coordinate[0] == '\0') {
+//             if (String(config.location).indexOf(',') == -1) {
+//                 CityInfo cityInfo = {};
+//                 if (api.getCityInfo(cityInfo, config.location)) {
+//                     sprintf(rtcdata.coordinate, "%.2f,%.2f", cityInfo.lon, cityInfo.lat);
+//                 }
+//             } else {
+//                 memcpy(rtcdata.coordinate, config.location, sizeof(rtcdata.coordinate));
+//             }
+//         }
+//         UI::weather(epd, u8g2Fonts, ptime, isSleeping, WiFi.RSSI(), getBatteryLevel());
 
-        sleepTimer = millis();
-update_timer:
-        rtcdata.next_update = (time(nullptr) / config.update_interval + 1) * config.update_interval;
-        // 如果上一次更新失败导致 next_update 没有更新, 从而导致这次更新时 next_update 仍在当前时间之前
-        if (rtcdata.next_update < time(nullptr)) {
-            rtcdata.next_update += config.update_interval;
-        }
-    });
-    // Bilibili页面: 显示up主粉丝数, 播放量和点赞量
-    addPage([](bool init) {
-        UI::bilibili(epd, u8g2Fonts);
-    });
-    // 下位机页面: 显示从 HTTP 接口发来的文本
-    pageCustom = addPage([](bool init) {
-        UI::display(epd, u8g2Fonts, WiFi.localIP().toString(), displayBuffer);
-    });
-    // 关于页面: 显示IP, 版本和版权信息以及必不可少的一言
-    addPage([](bool init) {
-        UI::about(epd, u8g2Fonts, WiFi.localIP().toString());
-    });
+//         sleepTimer = millis();
+// update_timer:
+//         rtcdata.next_update = (time(nullptr) / config.update_interval + 1) * config.update_interval;
+//         // 如果上一次更新失败导致 next_update 没有更新, 从而导致这次更新时 next_update 仍在当前时间之前
+//         if (rtcdata.next_update < time(nullptr)) {
+//             rtcdata.next_update += config.update_interval;
+//         }
+//     });
+//     // Bilibili页面: 显示up主粉丝数, 播放量和点赞量
+//     addPage([](bool init) {
+//         UI::bilibili(epd, u8g2Fonts);
+//     });
+//     // 下位机页面: 显示从 HTTP 接口发来的文本
+//     pageCustom = addPage([](bool init) {
+//         UI::display(epd, u8g2Fonts, WiFi.localIP().toString(), displayBuffer);
+//     });
+//     // 关于页面: 显示IP, 版本和版权信息以及必不可少的一言
+//     addPage([](bool init) {
+//         UI::about(epd, u8g2Fonts, WiFi.localIP().toString());
+//     });
+
 }
 
 // TODO 适配硬件 RTC, 我这块板子上没有, 等换板子再说吧

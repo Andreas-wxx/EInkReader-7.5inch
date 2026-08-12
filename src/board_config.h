@@ -39,7 +39,9 @@
 #define EPD_BUSY 0
 #define EPD_CLK 0
 #define EPD_MOSI 0
+#ifndef EPD_ROTATION
 #define EPD_ROTATION 0
+#endif
 #define SUPPORT_PARTIAL_UPDATE false
 #define KEY_SWITCH 0
 #define KEY_PIN_MODE INPUT

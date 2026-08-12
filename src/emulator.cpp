@@ -18,7 +18,7 @@
 // 2: 倒置竖屏(顺时针180度)
 // 3: 倒置横屏(顺时针270度)
 #ifndef EMULATOR_ROTATION
-#define EMULATOR_ROTATION 0
+#define EMULATOR_ROTATION 3
 #endif
 
 // 模拟器屏幕窗口的放大倍数
@@ -67,6 +67,9 @@ uint32_t get_color(GxEPD2_3C<GxEPD2_Type, page_height>& epd, int x, int y) {
 int main(int argc, char* argv[]) {
     // 使日志能在 pio 的输出窗口上实时打印
     setbuf(stdout, NULL);
+    // Window size must consider EPD_ROTATION: setup() runs later in a thread,
+    // so apply rotation here first to get the correct rotated dimensions.
+    epd.setRotation(EPD_ROTATION);
 
     // 墨水屏尺寸
     int width = epd.WIDTH;
