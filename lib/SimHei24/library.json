@@ -1,0 +1,9 @@
+﻿{
+  "name": "SimHei24",
+  "version": "1.0.0",
+  "description": "24px SimHei Chinese font for U8g2",
+  "build": {
+    "srcDir": "src",
+    "srcFilter": "+<*.c>"
+  }
+}

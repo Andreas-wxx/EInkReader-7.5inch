@@ -37,8 +37,32 @@ extern const char *model_name;
 extern const char *version;
 extern const uint32_t version_code;
 
+// 天气缓存: 开机刷新一次, 之后定时刷新 (普通界面 1 小时, 锁屏 2 小时)
+// 页面绘制只读缓存, 不再每次请求网络, 避免频繁刷新浪费电量
+struct WeatherCache {
+    Weather current;        // 当前天气
+    Weather hourly[8];      // 逐小时 (最多8条)
+    DailyWeather daily[7];  // 逐日 (7天)
+    time_t fetchedAt;       // 上次成功获取时间
+    bool valid;             // 缓存是否有效
+};
+
+extern WeatherCache weatherCache;
+extern void fetchWeather(); // 刷新天气缓存 (仅缓存过期时调用, 开机+定时)
+
 extern API<> api;
 extern Config config;
 extern RTCData rtcdata;
+extern int selectedApp;
+extern int8_t getBatteryLevel();
+extern void refreshPage(); // 重绘当前页面 // 电量百分比(0~100), 未实现返回 -1
+extern volatile bool screenLocked; // 锁屏(低功耗)状态, 供模拟器/UI使用
+
+// 锁屏/解锁: 锁屏时切横屏(EPD_ROTATION=0)画大时间, 解锁后切回竖屏并重绘首页
+void lockScreen();
+void unlockScreen();
+
+// 是否处于充电状态: 真机读 PIN_CHARGING, 模拟器固定模拟
+bool isCharging(); // 首页应用区当前选中的应用索引 (0~3)
 
 #endif // __MAIN_H__

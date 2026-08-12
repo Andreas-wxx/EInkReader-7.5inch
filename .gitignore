@@ -3,3 +3,32 @@
 build/
 third_party/
 .pio-core/
+
+# ===== 开发过程文件 (不随项目上传) =====
+# 克隆的 LiClock 参考源码 (体积大, 仅本地参考, 不删除)
+doc/LiClock/
+doc/LiClock_gitee/
+doc/LiClock_*.cpp
+doc/LiClock_*.h
+
+# 截图与参考图片 (一次性过程文件)
+doc/*.png
+doc/*.jpg
+doc/*.bmp
+
+# 字体生成工具与中间产物
+doc/*.bdf
+doc/*.map
+doc/*.info
+doc/bdfconv.exe
+doc/u8g2_font_*.c
+doc/romannum*.c
+
+# 农历数据提取中间文件
+doc/lTermInfo_raw.txt
+doc/lunarInfo_raw.txt
+doc/solarlunar*.js
+
+# 临时调试脚本 (下划线开头)
+tools/_*.py
+tools/_*.png

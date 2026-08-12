@@ -94,13 +94,15 @@
 // #define WIFI_SSID "SSID"
 // #define WIFI_PASSWORD "PASSWORD"
 // 和风天气 API Host
-#define QWEATHER_HOST "devapi.qweather.com"
+#define QWEATHER_HOST "nh5rk8adqv.re.qweatherapi.com"
 // 和风天气 API KEY
-#define QWEATHER_KEY "your_qweather_key"
+#define QWEATHER_KEY "f1d328d210914729b48a9455f64d9516"
 // 是否显示按小时天气预报温度折线 (仅当屏幕大小足够显示时生效, 例如 3.5 寸以上)
 #define SHOW_WEATHER_HOURLY_CURVE false
 // 是否显示按天天气预报温度折线 (仅当屏幕大小足够显示时生效, 例如 3.5 寸以上)
 #define SHOW_WEATHER_DAILY_CURVE true
+// 首页应用区选中高亮的灰度 (0~100): 0=纯白, 100=纯黑, 中间值为灰阶
+#define HIGHLIGHT_GRAY 60
 
 // 恭喜你, 已经完成了所有配置, 其余配置可通过小程序或 HTTP 接口修改, 详见 README.md
 

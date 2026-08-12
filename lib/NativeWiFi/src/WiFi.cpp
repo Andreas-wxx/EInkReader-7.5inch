@@ -16,4 +16,8 @@ IPAddress WiFiClass::gatewayIP() {
     return IPAddress(127, 0, 0, 1);
 }
 
+bool WiFiClass::isConnected() {
+    return true; // 模拟器模拟已连接, 便于状态栏演示
+}
+
 WiFiClass WiFi;

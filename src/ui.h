@@ -41,6 +41,7 @@ public:
     static void display(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2, const String &ip, const String &text);
     static void about(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2, const String &ip);
     static void bookshelf(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2);
+    static void home(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2);
 };
 
 typedef UIImpl<UITraits<EPD_DRIVER::WIDTH, EPD_DRIVER::HEIGHT>::value> UI;

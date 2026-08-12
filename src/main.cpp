@@ -79,13 +79,71 @@ String displayBuffer;
 
 Config config;
 RTC_DATA_ATTR RTCData rtcdata;
+int selectedApp = 0;
+
+// ============ 天气缓存 ============
+// 开机刷新一次, 之后普通界面每 1 小时、锁屏每 2 小时刷新一次
+// 页面绘制只读缓存, 避免每次进页面都请求网络
+WeatherCache weatherCache = {};
+
+void fetchWeather() {
+    HourlyForecast hf = {
+        .weather = weatherCache.hourly,
+        .length = ARRAY_LENGTH(weatherCache.hourly),
+        .interval = config.hour_step
+    };
+    DailyForecast df = {
+        .weather = weatherCache.daily,
+        .length = ARRAY_LENGTH(weatherCache.daily)
+    };
+    weatherCache.valid = api.getWeatherNow(weatherCache.current, config.location)
+                        & api.getForecastHourly(hf, config.location)
+                        & api.getForecastDaily(df, config.location);
+    weatherCache.fetchedAt = time(nullptr);
+    Serial.println(F("Weather cache refreshed"));
+}
 
 int8_t getBatteryLevel() {
+#ifdef NATIVE
+    return 85; // 模拟器: 模拟 85% 电量, 方便状态栏演示
+#else
 #if ENABLE_BATTERY_DISPLAY
     #error "请实现 int8_t getBatteryLevel() 函数"
 #else
-    return -1;
+    return -1; // TODO 真机: 读 PIN_ADC(33) 换算电量
 #endif
+#endif
+}
+
+// 充电状态: 真机读 PIN_CHARGING(26), 模拟器固定模拟未充电
+bool isCharging() {
+#ifdef NATIVE
+    return false;
+#else
+    // TODO 真机: return digitalRead(PIN_CHARGING) == 0; // 低电平表示充电中(按硬件设计调整)
+    return false;
+#endif
+}
+
+// ============ 锁屏(低功耗)状态机 ============
+// screenLocked: 锁屏中; 锁屏时屏幕切横屏(EPD_ROTATION=0)画超大时间
+volatile bool screenLocked = false;
+// 模拟器专用请求标志 (emulator.cpp 设置, Arduino 线程执行, 避免跨线程操作 epd)
+volatile bool emuRequestLock = false;
+volatile bool emuRequestUnlock = false;
+
+void lockScreen() {
+    if (screenLocked) return;
+    screenLocked = true;
+    epd.setRotation(0);           // 横屏 800x480
+    UI::lowPower(epd, u8g2Fonts); // 画锁屏界面
+}
+
+void unlockScreen() {
+    if (!screenLocked) return;
+    screenLocked = false;
+    epd.setRotation(EPD_ROTATION); // 切回竖屏 480x800
+    refreshPage();                  // 重绘首页
 }
 
 bool resetConfig(bool wifi = false) {
@@ -104,10 +162,10 @@ bool resetConfig(bool wifi = false) {
     }
     config.version = version_code;
     strcpy(config.hostname, product_name);
-    config.update_interval = 3600;
+    config.update_interval = 1800; // 天气更新间隔: 30分钟一次 (平衡功耗与气温准确性)
     config.theme = -1;
     config.hour_step = 1;
-    strcpy(config.location, "101010100");
+    strcpy(config.location, "101080201");
     memset(rtcdata.coordinate, 0, sizeof(rtcdata.coordinate));
     config.bilibili_uid = 1;
     strcpy(config.bilibili_cookie, "");
@@ -208,11 +266,15 @@ IRAM_ATTR void onKeyPressed() {
 }
 
 void initPages() {
+    // 首页
+    addPage([](bool init) {
+        UI::home(epd, u8g2Fonts);
+    });
         // 书架页面
     addPage([](bool init) {
         UI::bookshelf(epd, u8g2Fonts);
     });
-    
+
 //     // 主页面: 天气
 //     addPage([](bool init) {
 //         time_t timestamp = time(nullptr);
@@ -395,6 +457,10 @@ void setup() {
 #endif
 
     initPages();
+
+    // 开机刷新一次天气 (之后按 1 小时/锁屏 2 小时定时刷新, 页面切换不重复请求)
+    fetchWeather();
+
 #ifndef NATIVE
     if (!SLEEP_TIMEOUT || resetReason != RST_REASON_DEEP_SLEEP) {
         server.on("/", HTTP_GET, []() {
@@ -584,6 +650,25 @@ void setup() {
 }
 
 void loop() {
+    // 模拟器锁屏请求 (真机上这些标志恒为 false)
+    if (emuRequestLock) { emuRequestLock = false; lockScreen(); }
+    if (emuRequestUnlock) { emuRequestUnlock = false; unlockScreen(); }
+
+    if (screenLocked) {
+        // 锁屏(低功耗): 每 2 小时刷新天气并重绘锁屏
+        if (weatherCache.valid && time(nullptr) - weatherCache.fetchedAt >= 7200) {
+            fetchWeather();
+            UI::lowPower(epd, u8g2Fonts);
+        }
+        return; // 锁屏中不做普通页面刷新
+    }
+
+    // 普通界面: 开机后每 1 小时刷新天气 (开机首次由 setup 完成)
+    if (weatherCache.valid && time(nullptr) - weatherCache.fetchedAt >= 3600) {
+        fetchWeather();
+        refreshPage();
+    }
+
     checkBattery();
 
 #ifndef NATIVE
