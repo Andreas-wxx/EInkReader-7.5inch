@@ -7,6 +7,10 @@
 #include "util.h"
 #include "lunar.h"
 #include "romannum_bitmap.h"
+
+// 右侧隐藏式应用栏宽度 (480 宽竖屏中占 170px)
+#define APP_BAR_W 170
+
 // ============================================================
 // 顶部状态栏 & 锁屏(低功耗)界面
 // 电池/WiFi 图标来源: LiClock (battery.cpp / AppManager.cpp), xbm 格式
@@ -395,31 +399,57 @@ void UIImpl<UISize::CUSTOM>::home(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2) {
 
     epd.drawFastHLine(0, 640, w, GxEPD_BLACK);
 
-    // ================= 下部 应用区 (640~800, 20%) =================
-    // 应用区绘制抽成独立函数 drawAppDock, 模拟器方向键切换时可只局部刷新这一条
-    drawAppDock(epd, u8g2);
+    // ================= 下部 提示区 (640~800, 20%) =================
+    // 原应用区改为"按确认键打开应用"提示; 应用栏改到右侧隐藏式(按确认键呼出)
+    drawHomeHint(epd, u8g2);
+
+    // 右侧隐藏式应用栏: 呼出时覆盖在首页右侧 (状态栏下方到屏幕底部)
+    if (appBarOpen) {
+        drawAppBar(epd, u8g2);
+    }
 
     endDraw(epd);
 }
 
-// 应用区 (y 640~800) 独立绘制: 不清屏, 只画应用条, 供模拟器局部刷新单独调用
-void drawAppDock(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2) {
+// 首页底部提示区 (y 640~800): 原应用区位置, 引导按确认键呼出右侧应用栏
+void drawHomeHint(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2) {
     uint16_t w = epd.width();
-    const char *appNames[] = {"电子书", "设置", "纪念日", "每日诗词"};
-    uint16_t appW = (w - 24) / 4;
-    // 先擦除应用区为白色, 再重绘 (局部刷新用)
+    // 先擦除提示区为白色, 再重绘 (局部刷新用)
     epd.fillRect(0, 641, w, 159, GxEPD_WHITE);
     epd.drawFastHLine(0, 640, w, GxEPD_BLACK);
-    for (int i = 0; i < 4; i++) {
-        uint16_t cx = 12 + i * appW + appW / 2;
+    // 居中: 书本图标 + 提示文字
+    drawAppIcon(epd, w / 2, 660, 0, GxEPD_BLACK);
+    u8g2.setFont(u8g2_font_simhei24_t_gb2312);
+    drawCenteredString(u8g2, w / 2, 755, "按确认键 打开应用");
+}
+
+// 右侧隐藏式应用栏: 按确认键呼出, 应用从上到下排列, 高度=状态栏下方到屏幕底部
+// 供模拟器局部刷新单独调用 (appBarOpen=false 时只擦白, 不留痕迹)
+void drawAppBar(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2) {
+    uint16_t w = epd.width();   // 480 (竖屏)
+    uint16_t h = epd.height();  // 800
+    const char *appNames[] = {"电子书", "设置", "纪念日", "每日诗词"};
+    int n = 4;
+    int barX = w - APP_BAR_W;   // 右侧应用栏 x 起点
+    int topY = 30;              // 状态栏(26px)下方开始
+    int barH = h - topY;        // 应用栏高度: 状态栏下方到屏幕底部
+    // 先擦除应用栏区域为白色 (局部刷新用; 收起时擦白不留痕)
+    epd.fillRect(barX, topY, APP_BAR_W, barH, GxEPD_WHITE);
+    if (!appBarOpen) return;
+    epd.drawFastVLine(barX, topY, barH, GxEPD_BLACK); // 左侧分隔线
+    int itemH = barH / n;
+    for (int i = 0; i < n; i++) {
+        int iy = topY + i * itemH;
         bool sel = (i == selectedApp);
         if (sel) {
             // 高亮背景: 用灰度抖动填充, 灰度值可调 (见 HIGHLIGHT_GRAY)
-            fillGrayRect(epd, cx - appW / 2 + 4, 662, appW - 8, 126, HIGHLIGHT_GRAY);
+            fillGrayRect(epd, barX + 6, iy + 10, APP_BAR_W - 12, itemH - 20, HIGHLIGHT_GRAY);
         }
-        drawAppIcon(epd, cx, 675, i, sel ? GxEPD_WHITE : GxEPD_BLACK);
+        // 图标 (条目上半居中) + 名称 (条目下半居中)
+        drawAppIcon(epd, barX + APP_BAR_W / 2, iy + itemH / 2 - 52, i, sel ? GxEPD_WHITE : GxEPD_BLACK);
+        u8g2.setFont(u8g2_font_simhei24_t_gb2312);
         u8g2.setForegroundColor(sel ? GxEPD_WHITE : GxEPD_BLACK);
-        drawCenteredString(u8g2, cx, 780, appNames[i]);
+        drawCenteredString(u8g2, barX + APP_BAR_W / 2, iy + itemH / 2 + 28, appNames[i]);
         u8g2.setForegroundColor(COLOR_PRIMARY);
     }
 }

@@ -58,6 +58,11 @@ extern int8_t getBatteryLevel();
 extern void refreshPage(); // 重绘当前页面 // 电量百分比(0~100), 未实现返回 -1
 extern volatile bool screenLocked; // 锁屏(低功耗)状态, 供模拟器/UI使用
 
+// 首页右侧隐藏式应用栏: 按确认键呼出, 应用从上到下排列
+extern volatile bool appBarOpen;        // 应用栏是否呼出
+extern volatile bool emuRequestOpenApp; // 模拟器: 请求打开当前选中的应用
+void openApp(int idx);                  // 打开应用 (进入对应页面)
+
 // 锁屏/解锁: 锁屏时切横屏(EPD_ROTATION=0)画大时间, 解锁后切回竖屏并重绘首页
 void lockScreen();
 void unlockScreen();

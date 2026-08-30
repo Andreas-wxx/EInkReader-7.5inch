@@ -34,7 +34,9 @@
 extern EPD_CLASS epd;
 extern bool keyPressed;
 extern int selectedApp;
-extern void drawAppDock(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2);
+extern volatile bool appBarOpen;
+extern volatile bool emuRequestOpenApp;
+extern void drawAppBar(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2);
 extern U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
 extern void refreshPage();
 extern volatile bool screenLocked;
@@ -110,6 +112,11 @@ int main(int argc, char* argv[]) {
     uint64_t autoStart = SDL_GetTicks();
     if (autoShot) printf("[EMU] EMU_AUTOSHOT enabled\n");
 
+    // 调试: EMU_APPBAR=1 时启动后自动呼出右侧应用栏 (验证应用栏 UI, 无需按键)
+    bool autoAppBar = getenv("EMU_APPBAR") != nullptr;
+    bool autoAppBarDone = false;
+    if (autoAppBar) printf("[EMU] EMU_APPBAR enabled\n");
+
     // 启动 Arduino 线程
     std::atomic<bool> running{true};
     std::atomic<bool> refresh{false};
@@ -123,8 +130,8 @@ int main(int argc, char* argv[]) {
                 refresh = false;
             }
             if (dockRefresh) {
-                // 只重绘应用条 (不清屏), 模拟墨水屏局部刷新
-                drawAppDock(epd, u8g2Fonts);
+                // 只重绘右侧应用栏 (不清屏), 模拟墨水屏局部刷新
+                drawAppBar(epd, u8g2Fonts);
                 dockRefresh = false;
             }
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
@@ -177,15 +184,52 @@ int main(int argc, char* argv[]) {
                 if (screenLocked) {
                     enterDown = false; // 锁屏: 任意键松开
                 } else if (event.key.key == SDLK_DOWN || event.key.key == SDLK_RETURN) {
-                    enterDown = false;
+                    if (enterDown) {
+                        uint64_t holdMs = SDL_GetTicks() - enterDownTime;
+                        enterDown = false;
+                        if (holdMs >= 1500) {
+                            // 长按(>=1.5s): 收起应用栏, 不进入应用
+                            if (appBarOpen) {
+                                appBarOpen = false;
+                                refresh = true; // 整页重绘恢复完整首页
+                                printf("[EMU] app bar closed (long press)\n");
+                            }
+                        } else {
+                            // 短按: 呼出应用栏 / 打开选中应用
+                            if (appBarOpen) {
+                                emuRequestOpenApp = true; // 由 Arduino 线程执行, 避免跨线程操作 epd
+                                printf("[EMU] open app %d\n", selectedApp);
+                            } else {
+                                appBarOpen = true; // 呼出右侧应用栏
+                                dockRefresh = true;
+                                printf("[EMU] app bar opened (confirm)\n");
+                            }
+                        }
+                    }
                 }
             }
+        }
+
+        // 调试: EMU_APPBAR=1 时 1 秒后自动呼出应用栏
+        if (autoAppBar && !autoAppBarDone && !screenLocked && SDL_GetTicks() - autoStart > 1000) {
+            appBarOpen = true;
+            dockRefresh = true;
+            autoAppBarDone = true;
+            printf("[EMU] auto app bar opened\n");
         }
 
         // 锁屏: 任意键长按 2 秒 -> 唤醒
         if (enterDown && screenLocked && SDL_GetTicks() - enterDownTime > 2000) {
             emuRequestUnlock = true;
             enterDown = false;
+        }
+
+        // 非锁屏: 应用栏打开时, 确认键长按 1.5 秒 -> 收起应用栏 (SDL 长按会重复发 KEY_DOWN, 这里兜底)
+        if (enterDown && !screenLocked && appBarOpen && SDL_GetTicks() - enterDownTime > 1500) {
+            appBarOpen = false;
+            enterDown = false;
+            refresh = true;
+            printf("[EMU] app bar closed (long press, loop)\n");
         }
 
         // 无操作 idleSec 秒 -> 自动进入低功耗(锁屏)

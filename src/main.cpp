@@ -80,6 +80,9 @@ String displayBuffer;
 Config config;
 RTC_DATA_ATTR RTCData rtcdata;
 int selectedApp = 0;
+// 首页右侧隐藏式应用栏: 按确认键呼出 (模拟器 emulator.cpp 控制)
+volatile bool appBarOpen = false;
+volatile bool emuRequestOpenApp = false;
 
 // ============ 天气缓存 ============
 // 开机刷新一次, 之后普通界面每 1 小时、锁屏每 2 小时刷新一次
@@ -135,6 +138,7 @@ volatile bool emuRequestUnlock = false;
 void lockScreen() {
     if (screenLocked) return;
     screenLocked = true;
+    appBarOpen = false;           // 锁屏时收起应用栏
     epd.setRotation(0);           // 横屏 800x480
     UI::lowPower(epd, u8g2Fonts); // 画锁屏界面
 }
@@ -253,6 +257,19 @@ void nextPage() {
     int8_t page = rtcdata.page + 1;
     page %= pages.size();
     showPage(page);
+}
+
+// 打开应用: 应用分发 (目前只有书架页, 其他应用后续实现后按 idx 切换)
+void openApp(int idx) {
+    switch (idx) {
+        case 0:  // 电子书 -> 书架页
+            showPage(1);
+            break;
+        default: // 设置/纪念日/每日诗词: 暂进书架页占位
+            showPage(1);
+            break;
+    }
+    appBarOpen = false; // 进入应用后收起应用栏
 }
 
 IRAM_ATTR void onKeyPressed() {
@@ -653,6 +670,7 @@ void loop() {
     // 模拟器锁屏请求 (真机上这些标志恒为 false)
     if (emuRequestLock) { emuRequestLock = false; lockScreen(); }
     if (emuRequestUnlock) { emuRequestUnlock = false; unlockScreen(); }
+    if (emuRequestOpenApp) { emuRequestOpenApp = false; openApp(selectedApp); }
 
     if (screenLocked) {
         // 锁屏(低功耗): 每 2 小时刷新天气并重绘锁屏
