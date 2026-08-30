@@ -32,6 +32,11 @@ doc/solarlunar*.js
 # HINK/合力泰 屏幕规格书 (过程参考文件, 不随项目上传)
 doc/HINK-*.pdf
 
+# 模拟器运行日志与截图 (过程文件, 不随项目上传)
+doc/emu_*.txt
+doc/emu_*.bmp
+emu_*.bmp
+
 # 临时调试脚本 (下划线开头)
 tools/_*.py
 tools/_*.png
