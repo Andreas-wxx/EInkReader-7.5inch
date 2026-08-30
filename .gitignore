@@ -29,6 +29,9 @@ doc/lTermInfo_raw.txt
 doc/lunarInfo_raw.txt
 doc/solarlunar*.js
 
+# HINK/合力泰 屏幕规格书 (过程参考文件, 不随项目上传)
+doc/HINK-*.pdf
+
 # 临时调试脚本 (下划线开头)
 tools/_*.py
 tools/_*.png
