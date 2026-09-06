@@ -18,43 +18,43 @@
 
 // 电池图标 (20x16, 每行3字节存储)
 static const uint8_t battery_empty_bits[] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfe, 0xff, 0x03,
-    0x01, 0x00, 0x04, 0x01, 0x00, 0x0c, 0x01, 0x00, 0x08, 0x01, 0x00, 0x08,
-    0x01, 0x00, 0x08, 0x01, 0x00, 0x08, 0x01, 0x00, 0x0c, 0x01, 0x00, 0x04,
-    0xfe, 0xff, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x80, 0x80, 0x00, 0x80,
+    0x80, 0x00, 0x80, 0x80, 0x00, 0x80, 0x80, 0x00, 0xe0, 0x80, 0x00, 0xe0,
+    0x80, 0x00, 0xe0, 0x80, 0x00, 0xe0, 0x80, 0x00, 0x80, 0x80, 0x00, 0x80,
+    0x80, 0x00, 0x80, 0xff, 0xff, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
 static const uint8_t battery_quarter_bits[] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfe, 0xff, 0x03,
-    0x01, 0x00, 0x04, 0x01, 0x00, 0x0c, 0x79, 0x00, 0x08, 0x79, 0x00, 0x08,
-    0x79, 0x00, 0x08, 0x79, 0x00, 0x08, 0x01, 0x00, 0x0c, 0x01, 0x00, 0x04,
-    0xfe, 0xff, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x80, 0x80, 0x07, 0x80,
+    0x80, 0x07, 0x80, 0x80, 0x07, 0x80, 0x80, 0x07, 0xe0, 0x80, 0x07, 0xe0,
+    0x80, 0x07, 0xe0, 0x80, 0x07, 0xe0, 0x80, 0x07, 0x80, 0x80, 0x07, 0x80,
+    0x80, 0x07, 0x80, 0xff, 0xff, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
 static const uint8_t battery_three_quarters_bits[] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfe, 0xff, 0x03,
-    0x01, 0x00, 0x04, 0x01, 0x00, 0x0c, 0xf9, 0x1f, 0x08, 0xf9, 0x1f, 0x08,
-    0xf9, 0x1f, 0x08, 0xf9, 0x1f, 0x08, 0x01, 0x00, 0x0c, 0x01, 0x00, 0x04,
-    0xfe, 0xff, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x80, 0x87, 0xff, 0x80,
+    0x87, 0xff, 0x80, 0x87, 0xff, 0x80, 0x87, 0xff, 0xe0, 0x87, 0xff, 0xe0,
+    0x87, 0xff, 0xe0, 0x87, 0xff, 0xe0, 0x87, 0xff, 0x80, 0x87, 0xff, 0x80,
+    0x87, 0xff, 0x80, 0xff, 0xff, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
 static const uint8_t battery_full_bits[] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xfe, 0xff, 0x03,
-    0x01, 0x00, 0x04, 0x01, 0x00, 0x0c, 0xf9, 0xff, 0x08, 0xf9, 0xff, 0x08,
-    0xf9, 0xff, 0x08, 0xf9, 0xff, 0x08, 0x01, 0x00, 0x0c, 0x01, 0x00, 0x04,
-    0xfe, 0xff, 0x03, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-// 充电图标 (20x16, 闪电, 由 tools 生成)
-static const uint8_t usb_bits[] = {
-    0x00, 0x00, 0x00,
-    0x00, 0x08, 0x00,
-    0x00, 0x0C, 0x00,
-    0x00, 0x0E, 0x00,
-    0x00, 0x1F, 0x00,
-    0x80, 0x1F, 0x00,
-    0xC0, 0xFF, 0x3F,
-    0xE0, 0xFF, 0x0F,
-    0xF0, 0xFF, 0x07,
-    0xF8, 0xFF, 0x01,
-    0x00, 0xFE, 0x00,
-    0x00, 0x3F, 0x00,
-    0x00, 0x1F, 0x00,
-    0x00, 0x07, 0x00,
-    0x80, 0x03, 0x00,
-    0x80, 0x00, 0x00,};
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x80, 0xff, 0xff, 0x80,
+    0xff, 0xff, 0x80, 0xff, 0xff, 0x80, 0xff, 0xff, 0xe0, 0xff, 0xff, 0xe0,
+    0xff, 0xff, 0xe0, 0xff, 0xff, 0xe0, 0xff, 0xff, 0x80, 0xff, 0xff, 0x80,
+    0xff, 0xff, 0x80, 0xff, 0xff, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+static const uint8_t flash_bits[] = {
+    0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x0C, 0x00, 0x00, 0x0E, 0x00,
+    0x00, 0x1F, 0x00, 0x80, 0x1F, 0x00, 0xC0, 0xFF, 0x3F, 0xE0, 0xFF, 0x0F,
+    0xF0, 0xFF, 0x07, 0xF8, 0xFF, 0x01, 0x00, 0xFE, 0x00, 0x00, 0x3F, 0x00,
+    0x00, 0x1F, 0x00, 0x00, 0x07, 0x00, 0x80, 0x03, 0x00, 0x80, 0x00, 0x00};
+
+static const uint8_t battery_half_bits[] = {
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x80, 0x80, 0x7f, 0x80,
+    0x80, 0x7f, 0x80, 0x80, 0x7f, 0x80, 0x80, 0x7f, 0xe0, 0x80, 0x7f, 0xe0,
+    0x80, 0x7f, 0xe0, 0x80, 0x7f, 0xe0, 0x80, 0x7f, 0x80, 0x80, 0x7f, 0x80,
+    0x80, 0x7f, 0x80, 0xff, 0xff, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+};
+// (充电显示改用 flash_bits 闪电标识 + 100%, 见 drawStatusBar)
+// (状态栏电池充电态改用 battery_charging_bits; liclock 的 usb 图标已弃用)
 // WiFi 图标 (16x13)
 static const uint8_t wifiIcon[] = {
     0x00, 0x00, 0xf0, 0x0f, 0xfc, 0x3f, 0x1e, 0x78, 0x07, 0xe0, 0xe0, 0x07,
@@ -72,42 +72,103 @@ static void drawStatusBar(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2) {
     u8g2.setFont(u8g2_font_helvB14_tf);
     u8g2.drawUTF8(8, 18, timeBuf);
 
-    // 右侧 (从右往左): 电量百分比(电池图标右侧) + 电池图标 + WiFi
+    // 右侧 (从右往左依次画): 电量百分比 + 电池图标 + WiFi
+    // 视觉从左到右: WiFi -> 电池(0/25/50/75/100%, 充电=满格白闪) -> 百分比
     int16_t x = w - 2;
-    int8_t batt = getBatteryLevel();
-    // 电量百分比
-    if (batt >= 0) {
+    int8_t batt = getBatteryLevel();      // -1 = 无电池检测
+    bool charging = isCharging();         // 充电中 / USB 外接供电
+    if (batt < 0) batt = 0;               // 无电池接入: 按 0% 显示
+    // 电量百分比 (1% 精度): 充电/USB供电显示 100% (电池充满但未拔USB的供电态)
+    {
         char pctBuf[8];
-        snprintf(pctBuf, sizeof(pctBuf), "%d%%", batt);
+        snprintf(pctBuf, sizeof(pctBuf), "%d%%", charging ? 100 : batt);
+        u8g2.setFont(u8g2_font_helvB14_tf);
         uint16_t tw = u8g2.getUTF8Width(pctBuf);
         x -= tw + 2;
         u8g2.drawUTF8(x, 18, pctBuf);
+        x -= 6;
+    }
+    // 电池图标 (20x16): 充电=闪电标识; 否则按 5 档电量
+    {
+        const uint8_t *icon;
+        if (charging) {
+            icon = flash_bits;
+        } else if (batt < 13)      icon = battery_empty_bits;         // 0%
+        else if (batt < 38)        icon = battery_quarter_bits;       // 25%
+        else if (batt < 63)        icon = battery_half_bits;          // 50%
+        else if (batt < 88)        icon = battery_three_quarters_bits;// 75%
+        else                       icon = battery_full_bits;          // 100%
+        x -= 20;
+        epd.drawXBitmap(x, 5, icon, 20, 16, GxEPD_BLACK);
         x -= 4;
     }
-    // 电池图标 (20x16)
-    const uint8_t *battIcon = battery_three_quarters_bits;
-    if (batt >= 0) {
-        if (batt < 15) battIcon = battery_empty_bits;
-        else if (batt < 40) battIcon = battery_quarter_bits;
-        else if (batt < 70) battIcon = battery_three_quarters_bits;
-        else battIcon = battery_full_bits;
-    }
-    x -= 20;
-    if (isCharging()) {
-        epd.drawXBitmap(x, 5, usb_bits, 20, 16, GxEPD_BLACK); // 充电中: 闪电图标
-    } else {
-        epd.drawXBitmap(x, 5, battIcon, 20, 16, GxEPD_BLACK);
-    }
-    // WiFi 图标 (16x13)
-    x -= 18;
+    // WiFi 图标 (16x13): 有网=扇区; 无网=黑圆白叉(不可用)
+    x -= 16;
     if (WiFi.isConnected()) {
         epd.drawXBitmap(x, 7, wifiIcon, 16, 13, GxEPD_BLACK);
     } else {
-        // 无网: 画断开叉
-        epd.drawLine(x, 7, x + 15, 19, GxEPD_BLACK);
-        epd.drawLine(x + 15, 7, x, 19, GxEPD_BLACK);
+        int16_t cx = x + 8, cy = 13;
+        epd.fillCircle(cx, cy, 6, GxEPD_BLACK);                 // 黑圆
+        epd.drawLine(cx - 3, cy - 3, cx + 3, cy + 3, GxEPD_WHITE); // 白叉
+        epd.drawLine(cx - 3, cy + 3, cx + 3, cy - 3, GxEPD_WHITE);
     }
     // 不画分割线: 状态栏与页面内容共享顶部空间
+}
+
+// 首页顶部时间块: 大时间(92px) + 公历日期 + 农历/节气/节假日
+// 供首页整页绘制与分钟级局部刷新共用
+static void drawHomeClockBody(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2, tm *ptime) {
+    uint16_t w = epd.width();
+    char buf[8];
+    snprintf(buf, sizeof(buf), "%02d:%02d", ptime->tm_hour, ptime->tm_min);
+    u8g2.setFont(u8g2_font_logisoso92_tn);
+    int tw = u8g2.getUTF8Width(buf);
+    u8g2.drawStr((w - tw) / 2, 170, buf);
+
+    // 公历日期
+    static const char *week[] = {"日", "一", "二", "三", "四", "五", "六"};
+    char date[32];
+    snprintf(date, sizeof(date), "%d月%d日 周%s", ptime->tm_mon + 1, ptime->tm_mday, week[ptime->tm_wday]);
+    u8g2.setFont(u8g2_font_simhei24_t_gb2312);
+    tw = u8g2.getUTF8Width(date);
+    u8g2.drawUTF8((w - tw) / 2, 225, date);
+
+    // 农历 + 传统节气 + 法定/传统节假日
+    char lunarBuf[96];
+    LunarDate ld;
+    if (solarToLunar(ptime->tm_year + 1900, ptime->tm_mon + 1, ptime->tm_mday, ld)) {
+        snprintf(lunarBuf, sizeof(lunarBuf), "农历%s%s月%s", ld.isLeap ? "闰" : "", lunarMonthCn(ld.month), lunarDayCn(ld.day));
+        // 节假日优先 (如清明 -> 清明节); 没有节假日才显示节气 (如大暑/小暑)
+        if (ld.festival) {
+            snprintf(lunarBuf + strlen(lunarBuf), sizeof(lunarBuf) - strlen(lunarBuf), " · %s", ld.festival);
+        } else if (ld.term) {
+            snprintf(lunarBuf + strlen(lunarBuf), sizeof(lunarBuf) - strlen(lunarBuf), " · %s", termName(ld.term));
+        }
+    } else {
+        snprintf(lunarBuf, sizeof(lunarBuf), "");
+    }
+    u8g2.setFont(u8g2_font_simhei24_t_gb2312);
+    tw = u8g2.getUTF8Width(lunarBuf);
+    u8g2.drawUTF8((w - tw) / 2, 265, lunarBuf);
+}
+
+// 首页分钟级局部刷新: 只刷顶部状态栏条 + 时间块两个窗口, 不清全屏不闪烁
+// 前提: 首页已由 UI::home 整页显示过 (buffer 内容保留在 RAM)
+void refreshHomeClock(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2) {
+    uint16_t w = epd.width();
+    time_t timestamp = time(nullptr);
+    tm *ptime = localtime(&timestamp);
+    // 注意: 不要 init()! init 会把 _initial_refresh 置 true, 导致区域刷新被
+    // 强制转成全屏全刷(黑一下)。首页整页显示后控制器 RAM 保持(见 draw.cpp endDraw),
+    // 直接对 buffer 改局部内容 + displayWindow 即可做真局部刷新。
+    // 窗口1: 顶部状态栏条 (含左侧时间/右侧 WiFi+电源), y 0..40
+    epd.fillRect(0, 0, w, 40, GxEPD_WHITE);
+    drawStatusBar(epd, u8g2);
+    epd.displayWindow(0, 0, w, 40);
+    // 窗口2: 大时间 + 日期 + 农历 (y 72..296, 避开中部天气区分割线 y300)
+    epd.fillRect(0, 72, w, 224, GxEPD_WHITE);
+    drawHomeClockBody(epd, u8g2, ptime);
+    epd.displayWindow(0, 72, w, 224);
 }
 
 // 锁屏大时间: 位图数字横向绘制, 整体居中, 字符间留间距 (用于横屏 800x480)
@@ -130,6 +191,52 @@ static void drawLockTime(EPD_CLASS &epd, int16_t topY, const char *time) {
             epd.drawXBitmap(x, topY + dy, bits, gw, gh, GxEPD_BLACK);
             x += gw + GAP;
         }
+    }
+}
+
+// 锁屏界面日期行: "x月x日 周x + 农历 + 节气/节假日", 居中于 y=288 (横屏)
+// lowPower(整页) 与 refreshLockClock(跨天局部刷新) 共用
+static void drawLockDateLine(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2, tm *ptime) {
+    uint16_t w = epd.width();
+    static const char *week[] = {"日", "一", "二", "三", "四", "五", "六"};
+    char dateBuf[96];
+    snprintf(dateBuf, sizeof(dateBuf), "%d月%d日 周%s", ptime->tm_mon + 1, ptime->tm_mday, week[ptime->tm_wday]);
+    LunarDate ld;
+    if (solarToLunar(ptime->tm_year + 1900, ptime->tm_mon + 1, ptime->tm_mday, ld)) {
+        char lunarBuf[72];
+        snprintf(lunarBuf, sizeof(lunarBuf), "%s农历%s%s月%s", "   ", ld.isLeap ? "闰" : "", lunarMonthCn(ld.month), lunarDayCn(ld.day));
+        if (ld.festival) {
+            snprintf(lunarBuf + strlen(lunarBuf), sizeof(lunarBuf) - strlen(lunarBuf), "%s%s", "   ", ld.festival);
+        } else if (ld.term) {
+            snprintf(lunarBuf + strlen(lunarBuf), sizeof(lunarBuf) - strlen(lunarBuf), "%s%s", "\u3000", termName(ld.term));
+        }
+        strncat(dateBuf, lunarBuf, sizeof(dateBuf) - strlen(dateBuf) - 1);
+    }
+    u8g2.setFont(u8g2_font_simhei24_t_gb2312);
+    drawCenteredString(u8g2, w / 2, 288, dateBuf);
+}
+
+// 休眠期每分钟局部刷新锁屏界面时间 (不清全屏不闪烁)
+// 前提: UI::lowPower 已整页显示过且未 hibernate (RAM 保留)
+void refreshLockClock(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2) {
+    uint16_t w = epd.width(); // 800 (横屏)
+    time_t ts = time(nullptr);
+    tm *pt = localtime(&ts);
+    static int lastYday = -1;
+    // 窗口1: 超大时间 (y 56..248, drawLockTime topY=60 高约176)
+    char buf[8];
+    snprintf(buf, sizeof(buf), "%02d:%02d", pt->tm_hour, pt->tm_min);
+    epd.fillRect(0, 56, w, 192, GxEPD_WHITE);
+    drawLockTime(epd, 60, buf);
+    epd.displayWindow(0, 56, w, 192);
+    // 窗口2: 日期行 (仅跨天时刷新, y 260..292)
+    // 注意: 不能延伸到 >=293, 否则会削掉温度曲线最高温数值的"脑袋"
+    //       (最高温点 y+12=327, 标注基线 317, simhei24 字顶约 295)
+    if (pt->tm_yday != lastYday) {
+        lastYday = pt->tm_yday;
+        epd.fillRect(0, 260, w, 32, GxEPD_WHITE);
+        drawLockDateLine(epd, u8g2, pt);
+        epd.displayWindow(0, 260, w, 32);
     }
 }
 
@@ -169,23 +276,7 @@ void UIImpl<UISize::CUSTOM>::lowPower(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g
     drawLockTime(epd, 60, buf);
 
     // 日期 + 星期 + 农历/节气/节假日 (与时间拉开间距)
-    static const char *week[] = {"日", "一", "二", "三", "四", "五", "六"};
-    char dateBuf[96];
-    snprintf(dateBuf, sizeof(dateBuf), "%d月%d日 周%s", ptime->tm_mon + 1, ptime->tm_mday, week[ptime->tm_wday]);
-    LunarDate ld;
-    if (solarToLunar(ptime->tm_year + 1900, ptime->tm_mon + 1, ptime->tm_mday, ld)) {
-        char lunarBuf[72];
-        snprintf(lunarBuf, sizeof(lunarBuf), "%s农历%s%s月%s", "   ", ld.isLeap ? "闰" : "", lunarMonthCn(ld.month), lunarDayCn(ld.day));
-        // 节假日优先 (如清明 -> 清明节); 没有节假日才显示节气 (如大暑/小暑), 用全角空格分隔
-        if (ld.festival) {
-            snprintf(lunarBuf + strlen(lunarBuf), sizeof(lunarBuf) - strlen(lunarBuf), "%s%s", "   ", ld.festival);
-        } else if (ld.term) {
-            snprintf(lunarBuf + strlen(lunarBuf), sizeof(lunarBuf) - strlen(lunarBuf), "%s%s", "\u3000", termName(ld.term));
-        }
-        strncat(dateBuf, lunarBuf, sizeof(dateBuf) - strlen(dateBuf) - 1);
-    }
-    u8g2.setFont(u8g2_font_simhei24_t_gb2312);
-    drawCenteredString(u8g2, w / 2, 288, dateBuf);
+    drawLockDateLine(epd, u8g2, ptime);
 
     // 按小时温度折线 (锁屏也显示, 条带压缩避免过高), 数据用全局缓存
     HourlyForecast hourlyForecast = {
@@ -284,37 +375,8 @@ void UIImpl<UISize::CUSTOM>::home(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2) {
     // ================================================================
 
     // ================= 上部 时间区 (0~300, 37.5%) =================
-    char buf[8];
-    snprintf(buf, sizeof(buf), "%02d:%02d", ptime->tm_hour, ptime->tm_min);
-    u8g2.setFont(u8g2_font_logisoso92_tn);
-    int tw = u8g2.getUTF8Width(buf);
-    u8g2.drawStr((w - tw) / 2, 170, buf);
-
-    // 公历日期
-    static const char *week[] = {"日", "一", "二", "三", "四", "五", "六"};
-    char date[32];
-    snprintf(date, sizeof(date), "%d月%d日 周%s", ptime->tm_mon + 1, ptime->tm_mday, week[ptime->tm_wday]);
-    u8g2.setFont(u8g2_font_simhei24_t_gb2312);
-    tw = u8g2.getUTF8Width(date);
-    u8g2.drawUTF8((w - tw) / 2, 225, date);
-
-    // 农历 + 传统节气 + 法定/传统节假日
-    char lunarBuf[96];
-    LunarDate ld;
-    if (solarToLunar(ptime->tm_year + 1900, ptime->tm_mon + 1, ptime->tm_mday, ld)) {
-        snprintf(lunarBuf, sizeof(lunarBuf), "农历%s%s月%s", ld.isLeap ? "闰" : "", lunarMonthCn(ld.month), lunarDayCn(ld.day));
-        // 节假日优先 (如清明 -> 清明节); 没有节假日才显示节气 (如大暑/小暑)
-        if (ld.festival) {
-            snprintf(lunarBuf + strlen(lunarBuf), sizeof(lunarBuf) - strlen(lunarBuf), " · %s", ld.festival);
-        } else if (ld.term) {
-            snprintf(lunarBuf + strlen(lunarBuf), sizeof(lunarBuf) - strlen(lunarBuf), " · %s", termName(ld.term));
-        }
-    } else {
-        snprintf(lunarBuf, sizeof(lunarBuf), "");
-    }
-    u8g2.setFont(u8g2_font_simhei24_t_gb2312);
-    tw = u8g2.getUTF8Width(lunarBuf);
-    u8g2.drawUTF8((w - tw) / 2, 265, lunarBuf);
+    // 大时间 + 公历 + 农历/节气/节假日 (与分钟局部刷新 drawHomeClockBody 共用)
+    drawHomeClockBody(epd, u8g2, ptime);
 
     epd.drawFastHLine(0, 300, w, GxEPD_BLACK);
 

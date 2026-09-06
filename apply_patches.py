@@ -44,6 +44,39 @@ for lib_dir in env.get("LIBSOURCE_DIRS"):
             with open(spi_cpp, "w", encoding="utf-8") as fp:
                 fp.write(new_content)
             print("Patched Native SPI: (unsigned long)cbuf -> (uintptr_t)cbuf")
-        with open(spi_flag_path, "w") as fp:
-            fp.write("")
+    with open(spi_flag_path, "w") as fp:
+        fp.write("")
     break
+
+# ESP32: GxEPD2 的 init() 内部会无参调用 _pSPIx->begin(), 会把 SPI 引脚重置为
+# arduino-esp32 默认引脚(如 VSPI 18/19/23/5)。微雪 e-Paper ESP32 Driver Board 的
+# 屏幕走非默认引脚(CLK=13 DIN=14 CS=15), 引脚映射由 src/main.cpp setup() 里
+# SPI.begin(EPD_CLK, -1, EPD_MOSI, EPD_CS) 负责, 因此注释掉库内的自动 begin。
+if env.subst("$PIOPLATFORM") == "espressif32":
+    for lib_dir in env.get("LIBSOURCE_DIRS"):
+        gxepd2_dir = path.join(env.subst(lib_dir), "GxEPD2")
+        if not path.isdir(gxepd2_dir):
+            continue
+        epd_cpp = path.join(gxepd2_dir, "src", "GxEPD2_EPD.cpp")
+        if not path.isfile(epd_cpp):
+            continue
+        flag = path.join(gxepd2_dir, ".patching-done-spi")
+        if path.isfile(flag):
+            break
+        with open(epd_cpp, "r", encoding="utf-8", errors="ignore") as fp:
+            content = fp.read()
+        target = "_pSPIx->begin();"
+        new_content = content.replace(
+            target,
+            "// " + target + " // patched: SPI pins are set by setup() (Waveshare ESP32 driver board uses non-default pins)",
+            1,
+        )
+        if new_content != content:
+            with open(epd_cpp, "w", encoding="utf-8") as fp:
+                fp.write(new_content)
+            print("Patched GxEPD2_EPD.cpp: disabled internal _pSPIx->begin() (SPI pins set in setup)")
+        else:
+            print("GxEPD2_EPD.cpp: target not found, skip")
+        with open(flag, "w") as fp:
+            fp.write("")
+        break

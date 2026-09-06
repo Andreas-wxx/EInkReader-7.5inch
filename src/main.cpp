@@ -113,7 +113,15 @@ int8_t getBatteryLevel() {
 #if ENABLE_BATTERY_DISPLAY
     #error "请实现 int8_t getBatteryLevel() 函数"
 #else
-    return -1; // TODO 真机: 读 PIN_ADC(33) 换算电量
+#if PIN_BATTERY_ADC >= 0
+    // 参考 LiClock: analogRead 原始值按分压系数换算成 mV, 再映射 0~100%
+    long mv = (long)analogRead(PIN_BATTERY_ADC) * BATTERY_ADC_FULL_MV / 4096L;
+    if (mv >= 4400) return 100;                       // 充电/外接电源时电压被抬高
+    if (mv <= 3400) return 0;
+    return (int8_t)((mv - 3400) * 100 / 1000);        // 3400~4400mV -> 0~100%
+#else
+    return -1; // 无电池检测电路 (见 config.h PIN_BATTERY_ADC)
+#endif
 #endif
 #endif
 }
@@ -123,8 +131,11 @@ bool isCharging() {
 #ifdef NATIVE
     return false;
 #else
-    // TODO 真机: return digitalRead(PIN_CHARGING) == 0; // 低电平表示充电中(按硬件设计调整)
-    return false;
+#if PIN_CHARGING >= 0
+    return digitalRead(PIN_CHARGING) == 0; // 参考 LiClock: 低电平=充电中
+#else
+    return POWER_SOURCE_USB; // 无充电检测引脚: 按板型编译期决定 (USB 外接供电)
+#endif
 #endif
 }
 
@@ -149,6 +160,46 @@ void unlockScreen() {
     epd.setRotation(EPD_ROTATION); // 切回竖屏 480x800
     refreshPage();                  // 重绘首页
 }
+
+#if defined(ESP32) && !defined(NATIVE)
+// 锁屏(休眠)低功耗待机: light-sleep + 周期定时唤醒, 不是睡死
+//  - 睡到"下一整分钟"或"天气刷新点"(每2h) 较早者
+//  - 唤醒后: 跨分钟 -> 局部刷新休眠界面时间(含跨天日期)
+//           跨天气点 -> 刷新天气 + 整页重绘休眠界面
+//  - 有按键/解锁请求 -> unlockScreen() 退出回首页
+// 说明: RAM 与屏幕内容全程保留(light-sleep 不重启, 屏不 hibernate)
+void lowPowerIdle() {
+    static uint8_t partialCnt = 0; // 局部刷新计数: 多次后整页刷新清残影
+    for (;;) {
+        time_t now = time(nullptr);
+        time_t nextWx = weatherCache.fetchedAt + 7200; // 锁屏天气每 2 小时
+        if (!weatherCache.valid || nextWx <= now) nextWx = now + 3600;
+        time_t nextMin = (now / 60 + 1) * 60;          // 下一整分钟
+        time_t target = nextMin < nextWx ? nextMin : nextWx;
+        uint64_t us = (uint64_t)(target - now) * 1000000ULL;
+        if (us < 1000000ULL) us = 1000000ULL;          // 至少睡 1s
+        esp_sleep_enable_timer_wakeup(us);
+        esp_light_sleep_start();
+        // ===== 定时唤醒 =====
+        now = time(nullptr);
+        if (weatherCache.valid && now - weatherCache.fetchedAt >= 7200) {
+            fetchWeather();
+            UI::lowPower(epd, u8g2Fonts);              // 整页重绘(含新天气)
+            partialCnt = 0;
+        } else {
+            refreshLockClock(epd, u8g2Fonts);          // 局部刷新时间(+跨天日期)
+            if (++partialCnt >= 30) {                  // 约30分钟整页full一次清残影
+                partialCnt = 0;
+                UI::lowPower(epd, u8g2Fonts);
+            }
+        }
+        // 按键 / 外部解锁请求 -> 退出回首页
+        if (keyPressed) { keyPressed = false; unlockScreen(); return; }
+        if (emuRequestUnlock) { emuRequestUnlock = false; unlockScreen(); return; }
+        if (!screenLocked) return;
+    }
+}
+#endif
 
 bool resetConfig(bool wifi = false) {
     if (wifi) {
@@ -647,7 +698,9 @@ void setup() {
             if (!SLEEP_TIMEOUT || resetReason != RST_REASON_DEEP_SLEEP) {
                 UI::syncTimeFailed(epd, u8g2Fonts);
             }
+#if SUPPORT_DEEP_SLEEP
             gotoSleep();
+#endif
         }
     }
     Serial.println(F("Done"));
@@ -673,12 +726,17 @@ void loop() {
     if (emuRequestOpenApp) { emuRequestOpenApp = false; openApp(selectedApp); }
 
     if (screenLocked) {
+#if defined(ESP32) && !defined(NATIVE)
+        lowPowerIdle(); // light-sleep 周期待机: 每分钟刷时间, 每2h刷天气
+        return;         // lowPowerIdle 在按键退出时已 unlockScreen() 并刷新首页
+#else
         // 锁屏(低功耗): 每 2 小时刷新天气并重绘锁屏
         if (weatherCache.valid && time(nullptr) - weatherCache.fetchedAt >= 7200) {
             fetchWeather();
             UI::lowPower(epd, u8g2Fonts);
         }
         return; // 锁屏中不做普通页面刷新
+#endif
     }
 
     // 普通界面: 开机后每 1 小时刷新天气 (开机首次由 setup 完成)
@@ -705,16 +763,30 @@ void loop() {
     }
 
     if (rtcdata.page == 0) {
+        // 分钟级局部刷新顶部时间 (不清全屏不闪烁); 首次进入只记录基准分钟
+        static int lastClockMin = -1;
+        time_t nowTs = time(nullptr);
+        tm nowTm = *localtime(&nowTs);
+        if (lastClockMin < 0) {
+            lastClockMin = nowTm.tm_min;
+        } else if (nowTm.tm_min != lastClockMin) {
+            lastClockMin = nowTm.tm_min;
+            refreshHomeClock(epd, u8g2Fonts);
+        }
 #if SLEEP_TIMEOUT > 0
         if (millis() - sleepTimer >= SLEEP_TIMEOUT * 1000) {
-            if (SUPPORT_PARTIAL_UPDATE) {
-                time_t timestamp = time(nullptr);
-                tm *time = localtime(&timestamp);
-                UI::titleBar(epd, u8g2Fonts, time, true, WiFi.RSSI(), getBatteryLevel());
-            } else {
-                refreshPage();
-            }
+#if defined(ESP32) && !defined(NATIVE)
+            // 进入休眠: 横屏低功耗界面 + light-sleep 周期待机 (不睡死)
+            // 每分钟局部刷新时间, 每 2 小时刷新天气; 有按键退出回首页
+            lockScreen();
+            lowPowerIdle();
+            return;
+#else
+            // 其他平台: 显示横屏低功耗界面后深睡 (旧逻辑)
+            epd.setRotation(0);
+            UI::lowPower(epd, u8g2Fonts);
             gotoSleep();
+#endif
         }
 #endif
         time_t delta = time(nullptr) - rtcdata.next_update;

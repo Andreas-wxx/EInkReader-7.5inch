@@ -48,6 +48,22 @@
 #define SUPPORT_DEEP_SLEEP true
 #endif
 
+// 电池/外接电源检测 (参考 LiClock, 供自绘驱动板启用; 默认 -1 = 无检测)
+#ifndef PIN_BATTERY_ADC
+#define PIN_BATTERY_ADC -1    // 电池电压分压 ADC 引脚
+#endif
+#ifndef PIN_CHARGING
+#define PIN_CHARGING -1       // 充电状态引脚 (低电平=充电中)
+#endif
+// 无电池检测时是否视为 USB 外接供电 (状态栏显示 USB 图标而非假电池)
+#ifndef POWER_SOURCE_USB
+#define POWER_SOURCE_USB false
+#endif
+// 电池分压满量程对应电压(mV), 由硬件分压电阻决定 (LiClock 为 7230)
+#ifndef BATTERY_ADC_FULL_MV
+#define BATTERY_ADC_FULL_MV 7230
+#endif
+
 #if (EPD_CS == -1) || (EPD_DC == -1) || (EPD_RST == -1) || (EPD_BUSY == -1) || (!defined(ESP8266) && (EPD_CLK == -1 || EPD_MOSI == -1)) || (KEY_SWITCH == -1)
 #warning "请先在 config.h 中配置硬件引脚"
 #error "Please configure hardware pins first in config.h"
@@ -71,9 +87,11 @@
 #define ENABLE_BATTERY_DISPLAY false
 // 电量低于多少百分比时进入休眠模式
 #define BATTERY_LOW_PERCENTAGE 5
-// 指定秒数无操作后进入休眠模式, 0 为不休眠
+// 指定秒数无操作后进入休眠模式, 0 为不休眠 (板级可覆盖)
 #if SUPPORT_DEEP_SLEEP
-#define SLEEP_TIMEOUT 180
+#ifndef SLEEP_TIMEOUT
+#define SLEEP_TIMEOUT 300 // 默认 5 分钟无操作进入深睡 (验证用)
+#endif
 #else
 #define SLEEP_TIMEOUT 0
 #endif

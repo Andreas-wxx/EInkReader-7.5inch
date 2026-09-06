@@ -11,7 +11,10 @@ void startDraw(EPD_CLASS &epd, int32_t bgcolor) {
 void endDraw(EPD_CLASS &epd, bool partial_update) {
 #ifndef NATIVE
     epd.display(partial_update);
-    epd.hibernate();
+    // 注意: 不能 hibernate! hibernate 让控制器深睡(RST 掉电), 醒来后屏幕 RAM
+    // (存放整页图像, 供 fast partial 做差分基准) 会丢失, 导致后续局部刷新把
+    // 未更新区域刷成空白。epd.display() 内部已 powerOff(关高压, RAM 保留)。
+    // 真机深睡场景: 唤醒后必须整页 full 刷新重建基准 (见 refreshHomeClock)。
 #endif
 }
 

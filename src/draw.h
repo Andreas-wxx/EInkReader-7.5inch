@@ -26,6 +26,10 @@ void fillGrayRect(EPD_CLASS &epd, int x, int y, int w, int h, uint8_t gray);
 void drawTitleBar(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2, const char *title, bool sleeping, int8_t rssi, int8_t battery);
 void drawArrow(EPD_CLASS &epd, uint16_t x, uint16_t y, int16_t asize, float aangle, uint16_t pwidth, uint16_t plength);
 void drawQRCode(EPD_CLASS &epd, uint16_t x, uint16_t y, uint8_t scale, const char *text, uint8_t version = 3, uint8_t ecc = ECC_LOW);
+// 首页分钟级局部刷新时间 (不清全屏, 用于墨水屏时钟走动)
+void refreshHomeClock(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2);
+// 休眠(锁屏)界面分钟级局部刷新时间 (横屏, 供 light-sleep 周期唤醒调用)
+void refreshLockClock(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2);
 
 const char *getWeatherIcon(uint16_t id, bool fill = false);
 
