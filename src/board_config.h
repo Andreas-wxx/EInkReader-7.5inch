@@ -88,7 +88,8 @@
 #define EPD_MOSI 14
 #define EPD_ROTATION 1
 #define SUPPORT_PARTIAL_UPDATE true
-// 屏幕独立 LDO 电源开关 (两级: 平时/锁屏常开 -> 支持局部刷新; 关机/深睡断电)
+// 屏幕独立 LDO 电源开关 (微雪拓扑: 默认/悬空/高=屏幕常开; GPIO 拉低=关屏断电)
+// 注意: 硬件 R35(NC)不贴时默认常开; 要软件控需贴 R35(约1k~2.2k), 平时输出高, 关机拉低
 #define EPD_PWR 21
 // ---- 按键: 前侧两翻页(KEY_UP/DOWN) + 右侧面 PWR/OK ----
 #define KEY_SWITCH 33         // PWR/OK(确认/电源) 作为现有单键逻辑(页面切换/唤醒)
