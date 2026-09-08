@@ -92,6 +92,9 @@
 #ifndef SDVDD_CTRL
 #define SDVDD_CTRL -1         // TF 卡电源控制
 #endif
+#ifndef PIN_SD_CARDDETECT
+#define PIN_SD_CARDDETECT -1  // TF 卡插入检测
+#endif
 
 #if (EPD_CS == -1) || (EPD_DC == -1) || (EPD_RST == -1) || (EPD_BUSY == -1) || (!defined(ESP8266) && (EPD_CLK == -1 || EPD_MOSI == -1)) || (KEY_SWITCH == -1)
 #warning "请先在 config.h 中配置硬件引脚"

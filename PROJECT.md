@@ -26,8 +26,8 @@
 - 最终主控：**ESP32-WROOM-32D-N16**（16MB Flash）；与验证用 **WROOM-32E 引脚完全兼容**，已验证引脚可直接复用
 - 验证板：微雪 e-Paper ESP32 Driver Board **Rev3**（env: `esp32-waveshare-750`）
 
-### 2.3 引脚分配（屏幕部分已验证 ✅；其余为自绘板规划 ⚠️，待定稿后同步进 board_config.h）
-| 功能 | ESP32 GPIO | 软件宏 | 状态 |
+### 2.3 引脚分配（自绘板定稿，屏幕部分已验证 ✅；已同步进 board_config 的 BOARD_WROOM32D_READER）
+| 功能 | ESP32 GPIO | 软件宏 | 说明 |
 |---|---|---|---|
 | 屏 CLK | 13 | `EPD_CLK` | ✅ 已验证 |
 | 屏 MOSI | 14 | `EPD_MOSI` | ✅ |
@@ -35,15 +35,54 @@
 | 屏 DC | 27 | `EPD_DC` | ✅ |
 | 屏 RST | 26 | `EPD_RST` | ✅ |
 | 屏 BUSY | 25 | `EPD_BUSY` | ✅ |
-| **屏幕电源控制** | **23** | `EPD_PWR`（规划） | ⚠️ 独立LDO开关，平时常开，仅关机/深度休眠断电 |
-| UART0 TX/RX | 1 / 3 | → CH340N | ⚠️ 烧录口 |
-| 电池电压 ADC | 34 | `PIN_BATTERY_ADC` | ⚠️ |
-| 充电/USB 检测 | 32 | `PIN_CHARGING` | ⚠️ |
-| AHT20 | SDA21 / SCL22 | — | ⚠️ 温湿度 |
-| DS3231 RTC | 同 I2C（SDA21/SCL22） | — | ⚠️ 高精度时钟 + CR2032 |
-| microSD | SCK13/MOSI14/MISO19/CS16 | — | ⚠️ 与屏共 SPI 总线、分 CS |
-| 翻页键↑ / ↓ / 确认 | 4 / 18 / 17 | `KEY_SWITCH` 等 | ⚠️ |
-| 空闲可扩展 | 5,12,23,33,35,36,39 | — | 35/36/39 输入专用需外上拉 |
+| 屏幕电源开关 | **21** | `EPD_PWR` | ⚠️ 独立LDO开关；平时/锁屏常开，仅关机/深睡断电（勿用 IO12/IO5 等 strapping 脚） |
+| UART0 TX/RX | 1 / 3（+BOOT=IO0） | → CH340N | 烧录口 |
+| 电池电压 ADC | 34 | `PIN_BATTERY_ADC` | ADC1 输入专用 |
+| 充电/USB 检测 | **39** | `PIN_CHARGING` | ⚠️ IO39(SENSOR_VN) 输入专用，需外部上拉 |
+| TF 卡插入检测 | **36** | `PIN_SD_CARDDETECT` | ⚠️ IO36(SENSOR_VP) 输入专用，需外部上拉 |
+| AHT20 + DS3231 | SDA=23 / SCL=22 | — | 与 liclock 一致 |
+| microSD 独立 SPI | SCK16 / MOSI18 / MISO19 / CS17 | `SD_*` | TF 电源可控 |
+| TF 卡电源控制 | 4 | `SDVDD_CTRL` | P-MOS 开关，低=开电 |
+| 按键 | KEY_UP=35 / KEY_DOWN=32 / PWR_OK=33 | `KEY_SWITCH` 等 | 35 输入专用需外部上拉 |
+| 已确认不可用（strapping） | IO0/2/5/12/15 | — | 勿作浮空输入/上拉输出脚 |
+
+### 2.3b 自绘板完整引脚表（按 pin 序号；pin17~22 为内部 Flash SPI，不接）
+| pin | 网格名称 | 作用 | 备注 |
+|---|---|---|---|
+| 1 | GND | 地 | 电源地 |
+| 2 | 3V3 | 3.3V 供电 | 主供电 |
+| 3 | EN | 复位/使能 | 上拉；自动下载接 CH340 DTR |
+| 4 | SENSOR_VP(IO36) | **CARDDETECT** TF卡插检测 | 输入专用，**需外部上拉到3.3V**；未插卡=高 |
+| 5 | SENSOR_VN(IO39) | **CHARGING** 充电/USB检测 | 输入专用，**需外部上拉**；低=充电中 |
+| 6 | IO34 | **ADC** 电池电压 | 输入专用，分压输入，不驱动 |
+| 7 | IO35 | **KEY_UP** 向上/上一页 | 输入专用，**需外部上拉到3.3V** |
+| 8 | IO32 | **KEY_DOWN** 向下/下一页 | 普通GPIO，可内部上拉 |
+| 9 | IO33 | **PWR/OK** 确认/电源键 | 普通GPIO可上拉；兼深睡唤醒(RTC GPIO) |
+| 10 | IO25 | **EPD_BUSY** 屏忙状态 | 屏信号，低=忙 |
+| 11 | IO26 | **EPD_RST** 屏复位 | 低有效 |
+| 12 | IO27 | **EPD_DC** 屏命令/数据 | 低=命令，高=数据 |
+| 13 | IO14 | **EPD_DIN** 屏SPI数据(MOSI) | |
+| 14 | IO12 | (未用) | **strapping(上电须低)**；模组内部已处理，可悬空 |
+| 15 | GND | 地 | |
+| 16 | IO13 | **EPD_CLK** 屏SPI时钟 | |
+| 17~22 | (内部 Flash SPI SD2/SD3/CMD/CLK/SD0/SD1) | — | 不接 |
+| 23 | IO15 | **EPD_CS** 屏片选 | 低有效；**strapping(上电注意)**，本屏已验证可用 |
+| 24 | IO2 | (未用) | **strapping(上电须高)**；模组内部已处理，可悬空 |
+| 25 | IO0 | **BOOT** 下载模式 | 上电低=下载；内部上拉，接BOOT键 |
+| 26 | IO4 | **SDVDD_CTRL** TF卡电源控制 | 输出；低=开电 |
+| 27 | IO16 | **SD_SCLK** TF卡SPI时钟 | |
+| 28 | IO17 | **SD_CS** TF卡片选 | 低有效 |
+| 29 | IO5 | (未用) | **strapping(上电须高)**；模组内部已处理，可悬空 |
+| 30 | IO18 | **SD_MOSI** TF卡SPI数据 | |
+| 31 | IO19 | **SD_MISO** TF卡SPI数据输入 | |
+| 32 | NC | (未用) | 悬空 |
+| 33 | IO21 | **EPD_PWR** 屏幕供电开关 | 输出；电路默认高=关屏(栅极上拉)，开机软件拉低开屏 |
+| 34 | IO3(RXD0) | **RXD** 串口收 | → CH340 TXD |
+| 35 | IO1(TXD0) | **TXD** 串口发 | → CH340 RXD |
+| 36 | IO22 | **SCL** I²C 时钟 | AHT20 / DS3231 |
+| 37 | IO23 | **SDA** I²C 数据 | AHT20 / DS3231 |
+| 38 | GND | 地 | |
+| 39 | GND | 地 | |
 
 ### 2.4 电源拓扑（规划，参考微雪驱动板）
 - USB 5V → 防反接 → 常电 LDO(3.3V，ESP32 等) ；另路 → P-MOS 可控开关 → **屏幕独立 LDO** → EPD_VCC
@@ -107,6 +146,13 @@ pio device monitor -p COM12 -b 115200
 ---
 
 ## 五、进度日志（倒序，最新在上）
+
+### 2026-09-08（引脚定稿）
+- 用户画板定稿引脚，经审查后同步进 `BOARD_WROOM32D_READER`：
+  屏 13/14/15/27/26/25；**EPD_PWR=21**（审查发现原放 IO12 有 strapping 启动风险，改回 21）；
+  CARDDETECT=IO36、CHARGING=IO39（非 strapping，输入专用需外部上拉）；
+  按键 KEY_UP=35 / KEY_DOWN=32 / PWR_OK=33；SDA=23/SCL=22；SD(独立SPI) SCK16/MOSI18/MISO19/CS17、SDVDD_CTRL=4
+- 确认 liclock 的 CARDDETECT 确实启用（检测卡→开TF电→初始化→用完全关），照搬该逻辑
 
 ### 2026-09-07
 - 建立本项目备忘；确认硬件与引脚规划（含 EPD_PWR=23 两级供电、AHT20/DS3231/TF 卡外设、离线模式需求）

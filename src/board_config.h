@@ -89,26 +89,27 @@
 #define EPD_ROTATION 1
 #define SUPPORT_PARTIAL_UPDATE true
 // 屏幕独立 LDO 电源开关 (两级: 平时/锁屏常开 -> 支持局部刷新; 关机/深睡断电)
-#define EPD_PWR 23
-// ---- 按键: 前侧两翻页(KEY_A/上, KEY_B/下) + 右侧面确认/电源 ----
-#define KEY_SWITCH 4          // 现有单键逻辑(页面切换/唤醒)用
-#define KEY_A 18              // 备用: 翻页上/左
-#define KEY_B 17              // 备用: 翻页下/右
+#define EPD_PWR 21
+// ---- 按键: 前侧两翻页(KEY_UP/DOWN) + 右侧面 PWR/OK ----
+#define KEY_SWITCH 33         // PWR/OK(确认/电源) 作为现有单键逻辑(页面切换/唤醒)
+#define KEY_UP 35             // 前侧翻页上 (IO35 输入专用, 需外部上拉到3V3)
+#define KEY_DOWN 32           // 前侧翻页下
 #define KEY_PIN_MODE INPUT_PULLUP
 #define KEY_TRIGGER_LEVEL LOW
 #define SUPPORT_DEEP_SLEEP true
-// ---- I2C 外设: AHT20 温湿度 + DS3231 高精度RTC ----
-#define PIN_SDA 21
+// ---- I2C 外设: AHT20 温湿度 + DS3231 高精度RTC (与 liclock 一致 SDA23/SCL22) ----
+#define PIN_SDA 23
 #define PIN_SCL 22
 #define PIN_RTC_IRQ -1        // DS3231 SQW 中断(暂未用, 日后闹钟/定时唤醒可接)
-// ---- microSD: 与屏幕共用 SPI 总线, 仅分 CS ----
-#define SD_CS 16
-#define SD_SCK 13
-#define SD_MOSI 14
+// ---- microSD: 独立 SPI 总线(右侧 pin25~31), TF 电源可控 ----
+#define SD_CS 17
+#define SD_SCK 16
+#define SD_MOSI 18
 #define SD_MISO 19
-#define SDVDD_CTRL -1         // TF 卡电源控制脚(如要省电再留脚)
+#define SDVDD_CTRL 4          // TF 卡电源控制 (P-MOS 开关; 低=开电)
+#define PIN_SD_CARDDETECT 36  // 卡插入检测 (IO36 输入专用, 需外部上拉到3V3)
 // ---- 电池 / 充电检测 ----
 #define PIN_BATTERY_ADC 34
-#define PIN_CHARGING 32
+#define PIN_CHARGING 39       // 充电/USB 检测 (IO39 输入专用, 需外部上拉)
 #define POWER_SOURCE_USB false
 #endif
