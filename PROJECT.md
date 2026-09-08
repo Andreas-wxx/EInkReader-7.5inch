@@ -113,6 +113,12 @@ pio device monitor -p COM12 -b 115200
 - 外壳进入 OpenSCAD 设计（v0.2→v0.3 玻璃外露版），保留各版本便于微调
 - 澄清：liclock `SDVDD_CTRL`=TF卡电源（非屏幕）；屏幕采用"常供电+powerOff"支持局部刷新，断电开关仅关机用
 
+### 2026-09-08
+- 新增自绘板板型 `BOARD_WROOM32D_READER`（board_config.h）与 I2C(SDA21/SCL22)/SD/EPD_PWR 引脚宏（config.h 兜底）
+  含：屏幕(复用已验证 13/14/15/27/26/25)、EPD_PWR=23、按键 4/18/17、AHT20+DS3231 共 I2C、
+  microSD(13/14/19/16)、电池 ADC34/充电32。备用待你画板定稿后启用。
+- 确认 liclock 外设接线：AHT20/DS3231 挂 I2C，TF 卡走 SPI（SDVDD 电源控制），建议照其原理图接线
+
 ### 2026-09-06
 - ESP32 真机验证完成：屏幕显示/天气/时间分钟级局部刷新/light-sleep 周期唤醒待机（每分刷时间+2h天气+30次清残影）
 - 状态栏重做：WiFi、5 档电池+百分比、充电=闪电+100%；休眠界面跨天日期窗口避开温度标注

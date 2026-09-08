@@ -64,6 +64,35 @@
 #define BATTERY_ADC_FULL_MV 7230
 #endif
 
+// I2C / SD / 屏幕电源控制 等外设引脚 (自绘板在 board_config.h 的 BOARD_WROOM32D_READER 中定义)
+#ifndef PIN_SDA
+#define PIN_SDA -1
+#endif
+#ifndef PIN_SCL
+#define PIN_SCL -1
+#endif
+#ifndef PIN_RTC_IRQ
+#define PIN_RTC_IRQ -1        // DS3231 SQW 中断
+#endif
+#ifndef EPD_PWR
+#define EPD_PWR -1            // 屏幕独立 LDO 开关 (无此开关时 -1)
+#endif
+#ifndef SD_CS
+#define SD_CS -1
+#endif
+#ifndef SD_SCK
+#define SD_SCK -1
+#endif
+#ifndef SD_MOSI
+#define SD_MOSI -1
+#endif
+#ifndef SD_MISO
+#define SD_MISO -1
+#endif
+#ifndef SDVDD_CTRL
+#define SDVDD_CTRL -1         // TF 卡电源控制
+#endif
+
 #if (EPD_CS == -1) || (EPD_DC == -1) || (EPD_RST == -1) || (EPD_BUSY == -1) || (!defined(ESP8266) && (EPD_CLK == -1 || EPD_MOSI == -1)) || (KEY_SWITCH == -1)
 #warning "请先在 config.h 中配置硬件引脚"
 #error "Please configure hardware pins first in config.h"

@@ -74,3 +74,41 @@
 #define PIN_CHARGING -1      // 充电状态引脚(低=充电); -1 = 无
 #define POWER_SOURCE_USB true // 无电池引脚时视为 USB 外接供电 (状态栏显示 USB 图标)
 #endif
+
+// 自绘 7.5" 阅读器主板 (WROOM-32D-N16 + 微雪7.5V2裸屏 + AHT20 + DS3231 + microSD)
+// 备用板型: 目前无对应 env, 待你画板定稿后启用; 引脚规划见 PROJECT.md
+#ifdef BOARD_WROOM32D_READER
+#define HAS_CONFIG
+// ---- 屏幕 (沿用已验证引脚, 与微雪板一致) ----
+#define EPD_CS 15
+#define EPD_DC 27
+#define EPD_RST 26
+#define EPD_BUSY 25
+#define EPD_CLK 13
+#define EPD_MOSI 14
+#define EPD_ROTATION 1
+#define SUPPORT_PARTIAL_UPDATE true
+// 屏幕独立 LDO 电源开关 (两级: 平时/锁屏常开 -> 支持局部刷新; 关机/深睡断电)
+#define EPD_PWR 23
+// ---- 按键: 前侧两翻页(KEY_A/上, KEY_B/下) + 右侧面确认/电源 ----
+#define KEY_SWITCH 4          // 现有单键逻辑(页面切换/唤醒)用
+#define KEY_A 18              // 备用: 翻页上/左
+#define KEY_B 17              // 备用: 翻页下/右
+#define KEY_PIN_MODE INPUT_PULLUP
+#define KEY_TRIGGER_LEVEL LOW
+#define SUPPORT_DEEP_SLEEP true
+// ---- I2C 外设: AHT20 温湿度 + DS3231 高精度RTC ----
+#define PIN_SDA 21
+#define PIN_SCL 22
+#define PIN_RTC_IRQ -1        // DS3231 SQW 中断(暂未用, 日后闹钟/定时唤醒可接)
+// ---- microSD: 与屏幕共用 SPI 总线, 仅分 CS ----
+#define SD_CS 16
+#define SD_SCK 13
+#define SD_MOSI 14
+#define SD_MISO 19
+#define SDVDD_CTRL -1         // TF 卡电源控制脚(如要省电再留脚)
+// ---- 电池 / 充电检测 ----
+#define PIN_BATTERY_ADC 34
+#define PIN_CHARGING 32
+#define POWER_SOURCE_USB false
+#endif
