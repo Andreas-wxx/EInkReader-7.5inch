@@ -7,6 +7,7 @@
  */
 
 #include "main.h"
+#include "battery.h"
 
 #include <functional>
 #include <vector>
@@ -114,11 +115,9 @@ int8_t getBatteryLevel() {
     #error "请实现 int8_t getBatteryLevel() 函数"
 #else
 #if PIN_BATTERY_ADC >= 0
-    // 参考 LiClock: analogRead 原始值按分压系数换算成 mV, 再映射 0~100%
+    // 参考 LiClock: analogRead 原始值按分压系数(BATTERY_ADC_FULL_MV=7230)换算成 mV
     long mv = (long)analogRead(PIN_BATTERY_ADC) * BATTERY_ADC_FULL_MV / 4096L;
-    if (mv >= 4400) return 100;                       // 充电/外接电源时电压被抬高
-    if (mv <= 3400) return 0;
-    return (int8_t)((mv - 3400) * 100 / 1000);        // 3400~4400mV -> 0~100%
+    return batteryPercentFromMv(mv);  // 非线性 OCV-SOC 映射, 1% 精度 (不再用 4400 判 USB)
 #else
     return -1; // 无电池检测电路 (见 config.h PIN_BATTERY_ADC)
 #endif
@@ -717,6 +716,9 @@ void setup() {
 
     pinMode(KEY_SWITCH, KEY_PIN_MODE);
     attachInterrupt(KEY_SWITCH, onKeyPressed, KEY_TRIGGER_LEVEL == LOW ? FALLING : RISING);
+#if PIN_CHARGING >= 0
+    pinMode(PIN_CHARGING, INPUT);   // 充电检测: 外部 R18(10k)+D6(SS34) 上拉 3V3, 用 INPUT 避免内部上拉干扰; 低=充电中
+#endif
 }
 
 void loop() {

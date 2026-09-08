@@ -91,13 +91,19 @@
 // 屏幕独立 LDO 电源开关 (微雪拓扑: 默认/悬空/高=屏幕常开; GPIO 拉低=关屏断电)
 // 注意: 硬件 R35(NC)不贴时默认常开; 要软件控需贴 R35(约1k~2.2k), 平时输出高, 关机拉低
 #define EPD_PWR 21
-// ---- 按键: 前侧两翻页(KEY_UP/DOWN) + 右侧面 PWR/OK ----
-#define KEY_SWITCH 33         // PWR/OK(确认/电源) 作为现有单键逻辑(页面切换/唤醒)
+// ---- 按键: 前侧两翻页(KEY_UP/DOWN) + SW1(开关机/确认, 经D1单向检测) ----
+#define KEY_SWITCH 33         // SW1 检测(开关机/确认功能键): GEK100 KEY 经 D1 隔离后接 IO33 (RTC脚, 可深睡唤醒)
 #define KEY_UP 35             // 前侧翻页上 (IO35 输入专用, 需外部上拉到3V3)
 #define KEY_DOWN 32           // 前侧翻页下
 #define KEY_PIN_MODE INPUT_PULLUP
 #define KEY_TRIGGER_LEVEL LOW
 #define SUPPORT_DEEP_SLEEP true
+// ---- GEK100_33 硬件开关机芯片 (SOT23-6L, 长按3.5s触发, 关机0功耗) ----
+// VDD=电池/USB 选通后的 VCC(常电,不经P-MOS), GND=地, KEY=SW1+3.3k上拉; OUTL->3401 P-MOS 栅极 -> VCC_SW 系统供电节点
+// 系统/屏幕 LDO(SPX3819) 输入必须接 VCC_SW(受控节点) 而非 VCC, 否则 GEK100 无法断电
+// 与 MCU 唯一交互线: SHUTDOWN
+#define SHUTDOWN 12           // GEK100 RST: 输出, 平时低; 软关机前拉高>=100ms 强制断电 (strapping上电须低, 恰符合RST平时低)
+// 注: GEK100 OUTH(开机检测) 已删除——ESP32 能运行即已知上电, 且 OUTH=VCC(可能5V) 直插 GPIO 有超压烧毁风险
 // ---- I2C 外设: AHT20 温湿度 + DS3231 高精度RTC (与 liclock 一致 SDA23/SCL22) ----
 #define PIN_SDA 23
 #define PIN_SCL 22
@@ -109,8 +115,8 @@
 #define SD_MISO 19
 #define SDVDD_CTRL 4          // TF 卡电源控制 (P-MOS 开关; 低=开电)
 #define PIN_SD_CARDDETECT 36  // 卡插入检测 (IO36 输入专用, 需外部上拉到3V3)
-// ---- 电池 / 充电检测 ----
-#define PIN_BATTERY_ADC 34
-#define PIN_CHARGING 39       // 充电/USB 检测 (IO39 输入专用, 需外部上拉)
+// ---- 电池电压 / 充电检测 ----
+#define PIN_BATTERY_ADC 34    // BAT 经 1M/1M 等阻分压→IO34(ADC1)+0.1uF 缓冲; 泄漏~1.85uA; 换算沿用 LiClock: mV=analogRead(34)*7230/4096; 方案二(N-MOS开关)见 PROJECT.md
+#define PIN_CHARGING 39       // 充电检测 (IO39 输入专用); 上拉方案: CHRG 经 D6(SS34)+R18(10k) 上拉3V3; 低=充电中, 未充电≈3.3V
 #define POWER_SOURCE_USB false
 #endif

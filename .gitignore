@@ -32,6 +32,10 @@ doc/solarlunar*.js
 # HINK/合力泰 屏幕规格书 (过程参考文件, 不随项目上传)
 doc/HINK-*.pdf
 
+# 外壳/屏幕FPC 规格 过程设计文件 (本地保留, 不随项目上传)
+doc/shell_v*.scad
+doc/fpc_spec.txt
+
 # 模拟器运行日志与截图 (过程文件, 不随项目上传)
 doc/emu_*.txt
 doc/emu_*.bmp

@@ -78,10 +78,10 @@ static void drawStatusBar(EPD_CLASS &epd, U8G2_FOR_ADAFRUIT_GFX &u8g2) {
     int8_t batt = getBatteryLevel();      // -1 = 无电池检测
     bool charging = isCharging();         // 充电中 / USB 外接供电
     if (batt < 0) batt = 0;               // 无电池接入: 按 0% 显示
-    // 电量百分比 (1% 精度): 充电/USB供电显示 100% (电池充满但未拔USB的供电态)
+    // 电量百分比 (1% 精度): 显示真实电量; 充电时由 batteryPercentFromMv 按端电压折算(近似)
     {
         char pctBuf[8];
-        snprintf(pctBuf, sizeof(pctBuf), "%d%%", charging ? 100 : batt);
+        snprintf(pctBuf, sizeof(pctBuf), "%d%%", batt);
         u8g2.setFont(u8g2_font_helvB14_tf);
         uint16_t tw = u8g2.getUTF8Width(pctBuf);
         x -= tw + 2;
